@@ -1,0 +1,10 @@
+[submodule "AFLplusplus"]
+	path = AFLplusplus
+	url = https://github.com/AFLplusplus/AFLplusplus.git
+	branch = master
+	ignore = dirty
+[submodule "webkit"]
+	path = webkit
+	url = https://github.com/WebKit/webkit
+	branch = master
+	ignore = dirty
