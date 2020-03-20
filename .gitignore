@@ -1,0 +1,9 @@
+# IntelliJ IDEA
+.idea
+# AFL output
+/out
+# JSC symlink
+/jsc
+# Failed patches
+*.orig
+*.rej
