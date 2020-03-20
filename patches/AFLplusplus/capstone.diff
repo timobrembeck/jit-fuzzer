@@ -1,0 +1,12 @@
+diff --git a/include/disas/capstone.h b/include/disas/capstone.h
+index 84e2149..2eb6be2 100644
+--- a/include/disas/capstone.h
++++ b/include/disas/capstone.h
+@@ -3,7 +3,7 @@
+
+ #ifdef CONFIG_CAPSTONE
+
+-#include <capstone.h>
++#include <capstone/capstone.h>
+
+ #else

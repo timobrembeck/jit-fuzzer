@@ -1,0 +1,52 @@
+diff --git Source/JavaScriptCore/jsc.cpp Source/JavaScriptCore/jsc.cpp
+index 8111dd6bc09..8219020aaed 100644
+--- Source/JavaScriptCore/jsc.cpp
++++ Source/JavaScriptCore/jsc.cpp
+@@ -400,6 +400,11 @@ static EncodedJSValue JSC_HOST_CALL functionTotalCompileTime(JSGlobalObject*, Ca
+ 
+ static EncodedJSValue JSC_HOST_CALL functionSetUnhandledRejectionCallback(JSGlobalObject*, CallFrame*);
+ 
++// Custom function for starting the afl forkserver
++static EncodedJSValue JSC_HOST_CALL functionStartForkserver(JSGlobalObject*, CallFrame*);
++// Custom function for receiving afl input
++static EncodedJSValue JSC_HOST_CALL functionGetAFLInput(JSGlobalObject*, CallFrame*);
++
+ struct Script {
+     enum class StrictMode {
+         Strict,
+@@ -654,6 +659,11 @@ protected:
+         addFunction(vm, "totalCompileTime", functionTotalCompileTime, 0);
+ 
+         addFunction(vm, "setUnhandledRejectionCallback", functionSetUnhandledRejectionCallback, 1);
++
++        // Custom function for starting the afl forkserver
++        addFunction(vm, "startForkserver", functionStartForkserver, 1);
++        // Custom function for receiving afl input
++        addFunction(vm, "getAFLInput", functionGetAFLInput, 1);
+     }
+ 
+     void addFunction(VM& vm, JSObject* object, const char* name, NativeFunction function, unsigned arguments)
+@@ -2426,6 +2436,23 @@ EncodedJSValue JSC_HOST_CALL functionSetUnhandledRejectionCallback(JSGlobalObjec
+     return JSValue::encode(jsUndefined());
+ }
+ 
++// Custom function for starting the afl forkserver
++// This does not do anything, just use the addresss of this function as AFL_ENTRYPOINT
++EncodedJSValue JSC_HOST_CALL functionStartForkserver(JSGlobalObject* globalObject, CallFrame* callFrame) {
++    fprintf(stdout, "[JSC] startForkserver()\n");
++    return JSValue::encode(jsUndefined());
++}
++
++// Custom function for receiving afl input
++EncodedJSValue JSC_HOST_CALL functionGetAFLInput(JSGlobalObject* globalObject, CallFrame* callFrame) {
++    fprintf(stdout, "[JSC] getAFLInput()\n");
++    // get AFL input value from qemu
++    int afl_input = syscall(536);
++    fprintf(stdout, "[JSC] AFL input: %d\n", afl_input);
++    // return input to js script
++    return JSValue::encode(jsNumber(afl_input));
++}
++
+ // Use SEH for Release builds only to get rid of the crash report dialog
+ // (luckily the same tests fail in Release and Debug builds so far). Need to
+ // be in a separate main function because the jscmain function requires object

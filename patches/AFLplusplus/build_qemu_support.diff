@@ -1,0 +1,13 @@
+diff --git a/qemu_mode/build_qemu_support.sh b/qemu_mode/build_qemu_support.sh
+index 09c04e7..24c7d8d 100755
+--- a/qemu_mode/build_qemu_support.sh
++++ b/qemu_mode/build_qemu_support.sh
+@@ -150,6 +150,8 @@ patch -p1 <../patches/elfload.diff || exit 1
+ patch -p1 <../patches/bsd-elfload.diff || exit 1
+ patch -p1 <../patches/cpu-exec.diff || exit 1
+ patch -p1 <../patches/syscall.diff || exit 1
++patch -p1 <../../../patches/AFLplusplus/syscall.diff || exit 1
++patch -p1 <../../../patches/AFLplusplus/capstone.diff || exit 1
+ patch -p1 <../patches/translate-all.diff || exit 1
+ patch -p1 <../patches/tcg.diff || exit 1
+ patch -p1 <../patches/i386-translate.diff || exit 1
