@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # do not send core dumps to external utility
-if [ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]; then
+if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
     echo core | sudo tee /proc/sys/kernel/core_pattern
 fi
 
 # optimize cpu scaling
-if [ "$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)" != "performance" ]; then
+if [[ "$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)" != "performance" ]]; then
     echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 fi
 
@@ -20,12 +20,14 @@ fi
 export AFL_TMPDIR="/tmp"
 
 # remove current input if exists
-if [ -f /$AFL_TMPDIR/.cur_input ]; then
-    rm /$AFL_TMPDIR/.cur_input
+if [[ -f /${AFL_TMPDIR}/.cur_input ]]; then
+    rm /${AFL_TMPDIR}/.cur_input
 fi
 
 # set afl entrypoint
-export AFL_ENTRYPOINT=0x41d720
+if [[ -f .afl_entrypoint ]]; then
+    export AFL_ENTRYPOINT=$(cat .afl_entrypoint)
+fi
 
 # start to fuzz
 ./AFLplusplus/afl-fuzz -i in -o out -t 9999999999999999 -m none -d -Q ./jsc fuzz.js

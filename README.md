@@ -15,8 +15,8 @@ git pull --recurse-submodules
 git submodule update --merge --remote --jobs 2
 ```
 
-## Installation
-Compile AFLplusplus and WebKit
+## Building
+Compile patched versions of AFLplusplus and WebKit
 ```
 cd jit-fuzzer
 make
