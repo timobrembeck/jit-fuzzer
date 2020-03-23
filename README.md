@@ -12,7 +12,7 @@ Pull new commits including submodules
 ```
 cd jit-fuzzer
 git pull --recurse-submodules
-git submodule update --merge --remote --jobs 2
+git submodule update --rebase --remote --jobs 2
 ```
 
 ## Building
