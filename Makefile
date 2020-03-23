@@ -1,8 +1,14 @@
-.PHONY: all jsc afl
+.PHONY: all submodules jsc afl
 
 all: jsc afl
 
-jsc:
+submodules:
+	# Check if submodules are initialized already
+	@if [ ! -f webkit/Source/JavaScriptCore/jsc.cpp ]; then \
+		git submodule update --init --recursive --jobs 2; \
+	fi
+
+jsc: submodules
 	# Patch JavaScriptCore
 	patch webkit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff
 	# Compile WebKit
@@ -10,11 +16,11 @@ jsc:
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R webkit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff
 	# Create symbolic link to JavaScriptCore executable (if not exists already)
-	if [ ! -f jsc ]; then \
+	@if [ ! -f jsc ]; then \
 		ln -s webkit/WebKitBuild/Debug/bin/jsc; \
 	fi
 
-afl:
+afl: submodules
 	# Patch AFLplusplus
 	patch AFLplusplus/qemu_mode/build_qemu_support.sh patches/AFLplusplus/build_qemu_support.diff
 	# Compile AFLplusplus including support for qemu
