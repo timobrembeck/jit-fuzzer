@@ -5,7 +5,7 @@
 	update = rebase
 	ignore = dirty
 [submodule "webkit"]
-	path = webkit
+	path = WebKit
 	url = https://github.com/WebKit/webkit
 	update = rebase
 	ignore = dirty
