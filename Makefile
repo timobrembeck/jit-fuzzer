@@ -5,7 +5,7 @@ all: jsc afl
 submodules:
 	# Check if submodules are initialized already
 	@if [ ! -f WebKit/Source/JavaScriptCore/jsc.cpp ]; then \
-		git submodule update --init --recursive --jobs 2; \
+		git submodule update --init --rebase --remote --jobs 2; \
 	fi
 
 jsc: submodules

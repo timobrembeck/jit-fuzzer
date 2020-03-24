@@ -11,7 +11,7 @@ git clone --recurse-submodules --remote-submodules --jobs 2 https://github.com/t
 Pull new commits including submodules
 ```
 cd jit-fuzzer
-git pull --recurse-submodules
+git pull
 git submodule update --rebase --remote --jobs 2
 ```
 
