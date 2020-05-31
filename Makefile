@@ -21,7 +21,7 @@ jsc: submodules
 	fi
 	# Store address of forkserver function to .afl_entrypoint
 	@echo -n "0x" > .afl_entrypoint
-	@nm jsc | grep functionStartForkserver | cut -d' ' -f1 >> .afl_entrypoint
+	@nm jsc | grep functionGetAFLInput | cut -d' ' -f1 >> .afl_entrypoint
 
 afl: submodules
 	# Patch AFLplusplus
