@@ -1,5 +1,13 @@
 #!/bin/bash
 
+cd $(dirname "$BASH_SOURCE")
+
+# check if dependencies are built
+if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/WebKitBuild/Debug/bin/jsc ]]; then
+    echo -e "Please build the dependencies by executing\n\n  $(whoami)@$(hostname):$(dirs +0)\$ make\n\nand restart this script." >&2
+    exit 1
+fi
+
 # do not send core dumps to external utility
 if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
     echo core | sudo tee /proc/sys/kernel/core_pattern
