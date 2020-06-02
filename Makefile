@@ -24,10 +24,12 @@ jsc: submodules
 	@nm jsc | grep functionGetAFLInput | cut -d' ' -f1 >> .afl_entrypoint
 
 afl: submodules
-	# Patch AFLplusplus
+	# Compile AFLplusplus
+	cd AFLplusplus && make all
+	# Patch QEMU for AFLplusplus
 	patch AFLplusplus/qemu_mode/build_qemu_support.sh patches/AFLplusplus/build_qemu_support.diff
-	# Compile AFLplusplus including support for qemu
-	cd AFLplusplus && make binary-only
+	# Build qemu support
+	cd AFLplusplus/qemu_mode && sh ./build_qemu_support.sh
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R AFLplusplus/qemu_mode/build_qemu_support.sh patches/AFLplusplus/build_qemu_support.diff
 
