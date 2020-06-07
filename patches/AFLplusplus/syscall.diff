@@ -2,32 +2,37 @@ diff --git a/linux-user/syscall.c b/linux-user/syscall.c
 index b13a170e..4af79175 100644
 --- a/linux-user/syscall.c
 +++ b/linux-user/syscall.c
-@@ -11504,6 +11504,28 @@
+@@ -11502,10 +11502,33 @@
+     case TARGET_NR_swapcontext:
+         /* PowerPC specific.  */
          return do_swapcontext(cpu_env, arg1, arg2, arg3);
  #endif
-
+ 
 +    /* Custom syscall for fuzzing JSC JIT */
-+    case 536:
-+        printf("[QEMU] Caught Syscall 536\n");
-+        int afl_input;
-+        FILE *afl_input_fptr;
-+        if ((afl_input_fptr = fopen("/tmp/.cur_input","r")) == NULL) {
-+            printf("Error opening file!");
-+            return -1;
++    case 536: ;
++        // this pointer determines the destination of the afl input
++        unsigned char *afl_input = arg1;
++        // how many bytes are requested
++        int afl_input_size = arg2;
++        // open file handler
++        FILE *afl_input_file_pointer;
++        if ((afl_input_file_pointer = fopen("/tmp/.cur_input","rb")) == NULL) {
++            fprintf(stderr, "[QEMU] Error opening file!\n");
++            return EXIT_FAILURE;
 +        }
-+        fscanf(afl_input_fptr,"%d", &afl_input);
-+        printf("[QEMU] AFL input: %d\n", afl_input);
-+        // Read contents from file
-+        printf("[QEMU] AFL input (hex encoded): 0x");
-+        char afl_input_char = fgetc(afl_input_fptr);
-+        while (afl_input_char != EOF) {
-+            printf("%x", afl_input_char);
-+            afl_input_char = fgetc(afl_input_fptr);
-+        }
-+        fclose(afl_input_fptr);
-+        printf("\n");
-+        return afl_input;
++        // read content of file into afl_input
++        fread(afl_input, afl_input_size, 1, afl_input_file_pointer);
++        // close file handler
++        fclose(afl_input_file_pointer);
++        // print retrieved afl input bytes
++        fprintf(stderr, "[QEMU] AFL input: ");
++        for (size_t i = 0; i < afl_input_size; ++i) fprintf(stderr, "%02x ", afl_input[i]);
++        fprintf(stderr, "\n");
++        // return success
++        return EXIT_SUCCESS;
 +
      default:
          qemu_log_mask(LOG_UNIMP, "Unsupported syscall: %d\n", num);
          return -TARGET_ENOSYS;
+     }
+     return ret;

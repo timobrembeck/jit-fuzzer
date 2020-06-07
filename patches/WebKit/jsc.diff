@@ -1,20 +1,36 @@
-diff --git Source/JavaScriptCore/jsc.cpp Source/JavaScriptCore/jsc.cpp
-index 8111dd6bc0..189314ab4a 100644
-@@ -398,10 +398,13 @@
+diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
+index 8111dd6bc0..afd47df83f 100644
+--- a/Source/JavaScriptCore/jsc.cpp
++++ b/Source/JavaScriptCore/jsc.cpp
+@@ -99,10 +99,13 @@
+ #include <wtf/URL.h>
+ #include <wtf/WallTime.h>
+ #include <wtf/text/StringBuilder.h>
+ #include <wtf/text/StringConcatenateNumbers.h>
+ 
++// fuzzed data provider for splitting afl input
++#include <fuzzer/FuzzedDataProvider.h>
++
+ #if OS(WINDOWS)
+ #include <direct.h>
+ #include <fcntl.h>
+ #include <io.h>
+ #else
+@@ -398,10 +401,13 @@
  static EncodedJSValue JSC_HOST_CALL functionMallocInALoop(JSGlobalObject*, CallFrame*);
  static EncodedJSValue JSC_HOST_CALL functionTotalCompileTime(JSGlobalObject*, CallFrame*);
  
  static EncodedJSValue JSC_HOST_CALL functionSetUnhandledRejectionCallback(JSGlobalObject*, CallFrame*);
  
 +// Custom function for receiving afl input
-+static EncodedJSValue JSC_HOST_CALL functionGetAFLInput(JSGlobalObject*, CallFrame*);
++static EncodedJSValue JSC_HOST_CALL functionGetAFLInputArray(JSGlobalObject*, CallFrame*);
 +
  struct Script {
      enum class StrictMode {
          Strict,
          Sloppy
      };
-@@ -652,10 +655,13 @@
+@@ -652,10 +658,13 @@
          addFunction(vm, "disableRichSourceInfo", functionDisableRichSourceInfo, 0);
          addFunction(vm, "mallocInALoop", functionMallocInALoop, 0);
          addFunction(vm, "totalCompileTime", functionTotalCompileTime, 0);
@@ -22,26 +38,60 @@ index 8111dd6bc0..189314ab4a 100644
          addFunction(vm, "setUnhandledRejectionCallback", functionSetUnhandledRejectionCallback, 1);
 +
 +        // Custom function for receiving afl input
-+        addFunction(vm, "getAFLInput", functionGetAFLInput, 1);
++        addFunction(vm, "getAFLInputArray", functionGetAFLInputArray, 1);
      }
      
      void addFunction(VM& vm, JSObject* object, const char* name, NativeFunction function, unsigned arguments)
      {
          Identifier identifier = Identifier::fromString(vm, name);
-@@ -2424,10 +2430,20 @@
+@@ -2424,10 +2433,54 @@
  
      globalObject->setUnhandledRejectionCallback(vm, object);
      return JSValue::encode(jsUndefined());
  }
  
 +// Custom function for receiving afl input
-+EncodedJSValue JSC_HOST_CALL functionGetAFLInput(JSGlobalObject* globalObject, CallFrame* callFrame) {
-+    fprintf(stdout, "[JSC] getAFLInput()\n");
-+    // get AFL input value from qemu
-+    int afl_input = syscall(536);
-+    fprintf(stdout, "[JSC] AFL input: %d\n", afl_input);
-+    // return input to js script
-+    return JSValue::encode(jsNumber(afl_input));
++EncodedJSValue JSC_HOST_CALL functionGetAFLInputArray(JSGlobalObject* globalObject, CallFrame* callFrame) {
++
++    // debug output
++    fprintf(stderr, "##########################################################################################\n");
++
++    // initialize global objects
++    VM& vm = globalObject->vm();
++    Structure* structure = globalObject->restParameterStructure();
++
++    // size of afl input in bytes
++    int afl_input_size = 21;
++
++    // initialize buffer for afl input
++    const unsigned char *afl_input;
++    afl_input = (unsigned char *) malloc(afl_input_size * sizeof(char));
++
++    // fill afl buffer by calling custom syscall
++    int success = syscall(536, afl_input, afl_input_size);
++    if (success != EXIT_SUCCESS) {
++        exit(1);
++    }
++
++    // print afl input
++    fprintf(stderr, "[JSC]  AFL input: ");
++    for (size_t i = 0; i < afl_input_size; ++i) fprintf(stderr, "%02x ", afl_input[i]);
++    fprintf(stderr, "\n");
++
++    // initialize fuzzed data provider (FDL) - see https://github.com/google/fuzzing/blob/master/docs/split-inputs.md
++    FuzzedDataProvider fuzzed_data(afl_input, afl_input_size);
++
++    // initialize return array
++    JSArray* afl_input_array = JSArray::tryCreate(vm, structure, 4);
++
++    // fill return array with split input of FDP
++    afl_input_array->putDirectIndex(globalObject, 0, jsBoolean(fuzzed_data.ConsumeBool()));
++    afl_input_array->putDirectIndex(globalObject, 1, jsNumber(fuzzed_data.ConsumeIntegral<uint16_t>()));
++    afl_input_array->putDirectIndex(globalObject, 2, jsDoubleNumber(fuzzed_data.ConsumeFloatingPoint<double>()));
++    afl_input_array->putDirectIndex(globalObject, 3, JSC::JSValue(JSC::jsString(vm, WTF::String(fuzzed_data.ConsumeRandomLengthString(10).c_str()))));
++
++    // return array with random values to js
++    return JSValue::encode(afl_input_array);
 +}
 +
  // Use SEH for Release builds only to get rid of the crash report dialog
