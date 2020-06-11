@@ -1,8 +1,20 @@
 diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
-index 8111dd6bc0..afd47df83f 100644
+index 8111dd6bc0..e83d31ad78 100644
 --- a/Source/JavaScriptCore/jsc.cpp
 +++ b/Source/JavaScriptCore/jsc.cpp
-@@ -99,10 +99,13 @@
+@@ -76,10 +76,11 @@
+ #include "WasmCapabilities.h"
+ #include "WasmContext.h"
+ #include "WasmFaultSignalHandler.h"
+ #include "WasmMemory.h"
+ #include <locale.h>
++#include <map>
+ #include <math.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/stat.h>
+@@ -99,10 +100,13 @@
  #include <wtf/URL.h>
  #include <wtf/WallTime.h>
  #include <wtf/text/StringBuilder.h>
@@ -16,7 +28,7 @@ index 8111dd6bc0..afd47df83f 100644
  #include <fcntl.h>
  #include <io.h>
  #else
-@@ -398,10 +401,13 @@
+@@ -398,10 +402,13 @@
  static EncodedJSValue JSC_HOST_CALL functionMallocInALoop(JSGlobalObject*, CallFrame*);
  static EncodedJSValue JSC_HOST_CALL functionTotalCompileTime(JSGlobalObject*, CallFrame*);
  
@@ -30,7 +42,7 @@ index 8111dd6bc0..afd47df83f 100644
          Strict,
          Sloppy
      };
-@@ -652,10 +658,13 @@
+@@ -652,10 +659,13 @@
          addFunction(vm, "disableRichSourceInfo", functionDisableRichSourceInfo, 0);
          addFunction(vm, "mallocInALoop", functionMallocInALoop, 0);
          addFunction(vm, "totalCompileTime", functionTotalCompileTime, 0);
@@ -44,7 +56,7 @@ index 8111dd6bc0..afd47df83f 100644
      void addFunction(VM& vm, JSObject* object, const char* name, NativeFunction function, unsigned arguments)
      {
          Identifier identifier = Identifier::fromString(vm, name);
-@@ -2424,10 +2433,54 @@
+@@ -2424,10 +2434,97 @@
  
      globalObject->setUnhandledRejectionCallback(vm, object);
      return JSValue::encode(jsUndefined());
@@ -60,8 +72,38 @@ index 8111dd6bc0..afd47df83f 100644
 +    VM& vm = globalObject->vm();
 +    Structure* structure = globalObject->restParameterStructure();
 +
-+    // size of afl input in bytes
-+    int afl_input_size = 21;
++    // initialize data type sizes
++    std::map<std::string, int> data_type_sizes;
++    data_type_sizes["bool"] = 1;
++    data_type_sizes["integer"] = 2;
++    data_type_sizes["double"] = 8;
++    data_type_sizes["string"] = 10; // only handle strings up to 10 bytes
++
++    // array of input types which are requested from JS (cast from JSValue to JSArray)
++    JSArray* afl_input_types_js = jsCast<JSArray*>(callFrame->argument(0));
++
++    // number of inputs which are requested from JS
++    int afl_input_types_length = afl_input_types_js->length();
++
++    // cumulated size of all requested input types in bytes
++    int afl_input_size = 0;
++
++    // convert JSArray 'afl_input_types_js' to C++ string array 'afl_input_types'
++    std::string afl_input_types[afl_input_types_length];
++    for (size_t i = 0; i < afl_input_types_length; ++i) {
++        std::string afl_input_type = afl_input_types_js->pop(globalObject).toString(globalObject)->value(globalObject).utf8().data();
++        // reverse order because pop() returns the last element first
++        afl_input_types[afl_input_types_length - i - 1] = afl_input_type;
++        afl_input_size += data_type_sizes[afl_input_type];
++    }
++
++    // print requested afl input types
++    fprintf(stderr, "[JSC] Requested AFL input types: ");
++    for (size_t i = 0; i < afl_input_types_length; ++i) fprintf(stderr, "%s, ", afl_input_types[i].c_str());
++    fprintf(stderr, "\n");
++
++    // print requested afl input size
++    fprintf(stderr, "[JSC] Cumulated size of requested afl input: %d\n", afl_input_size);
 +
 +    // initialize buffer for afl input
 +    const unsigned char *afl_input;
@@ -82,13 +124,26 @@ index 8111dd6bc0..afd47df83f 100644
 +    FuzzedDataProvider fuzzed_data(afl_input, afl_input_size);
 +
 +    // initialize return array
-+    JSArray* afl_input_array = JSArray::tryCreate(vm, structure, 4);
++    JSArray* afl_input_array = JSArray::tryCreate(vm, structure, afl_input_types_length);
 +
-+    // fill return array with split input of FDP
-+    afl_input_array->putDirectIndex(globalObject, 0, jsBoolean(fuzzed_data.ConsumeBool()));
-+    afl_input_array->putDirectIndex(globalObject, 1, jsNumber(fuzzed_data.ConsumeIntegral<uint16_t>()));
-+    afl_input_array->putDirectIndex(globalObject, 2, jsDoubleNumber(fuzzed_data.ConsumeFloatingPoint<double>()));
-+    afl_input_array->putDirectIndex(globalObject, 3, JSC::JSValue(JSC::jsString(vm, WTF::String(fuzzed_data.ConsumeRandomLengthString(10).c_str()))));
++    // fill return array
++    for (size_t i = 0; i < afl_input_types_length; ++i) {
++        if (afl_input_types[i] == "bool"){
++            bool afl_input_bool = fuzzed_data.ConsumeBool();
++            afl_input_array->putDirectIndex(globalObject, i, jsBoolean(afl_input_bool));
++        } else if (afl_input_types[i] == "integer"){
++            int afl_input_integer = fuzzed_data.ConsumeIntegral<uint16_t>();
++            afl_input_array->putDirectIndex(globalObject, i, jsNumber(afl_input_integer));
++        } else if (afl_input_types[i] == "double"){
++            double afl_input_double = fuzzed_data.ConsumeFloatingPoint<double>();
++            afl_input_array->putDirectIndex(globalObject, i, jsDoubleNumber(afl_input_double));
++        } else if (afl_input_types[i] == "string"){
++            std::string afl_input_string = fuzzed_data.ConsumeRandomLengthString(10);
++            afl_input_array->putDirectIndex(globalObject, i, JSC::JSValue(JSC::jsString(vm, WTF::String(afl_input_string.c_str()))));
++        } else {
++            afl_input_array->putDirectIndex(globalObject, i, jsUndefined());
++        }
++    }
 +
 +    // return array with random values to js
 +    return JSValue::encode(afl_input_array);
