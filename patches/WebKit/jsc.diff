@@ -1,38 +1,25 @@
 diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
-index 8111dd6bc0..e83d31ad78 100644
+index 83ca231719..5fc8e9eb61 100644
 --- a/Source/JavaScriptCore/jsc.cpp
 +++ b/Source/JavaScriptCore/jsc.cpp
-@@ -76,10 +76,11 @@
+@@ -65,10 +65,12 @@
+ #include "TestRunnerUtils.h"
+ #include "TypedArrayInlines.h"
+ #include "VMInspector.h"
  #include "WasmCapabilities.h"
- #include "WasmContext.h"
- #include "WasmFaultSignalHandler.h"
  #include "WasmMemory.h"
- #include <locale.h>
-+#include <map>
- #include <math.h>
++#include <fuzzer/FuzzedDataProvider.h> // fuzzed data provider for splitting afl input
++#include <map> // map for fuzzing data type sizes
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
  #include <sys/stat.h>
-@@ -99,10 +100,13 @@
- #include <wtf/URL.h>
- #include <wtf/WallTime.h>
- #include <wtf/text/StringBuilder.h>
- #include <wtf/text/StringConcatenateNumbers.h>
- 
-+// fuzzed data provider for splitting afl input
-+#include <fuzzer/FuzzedDataProvider.h>
-+
- #if OS(WINDOWS)
- #include <direct.h>
- #include <fcntl.h>
- #include <io.h>
- #else
-@@ -398,10 +402,13 @@
- static EncodedJSValue JSC_HOST_CALL functionMallocInALoop(JSGlobalObject*, CallFrame*);
+ #include <sys/types.h>
+@@ -352,10 +354,13 @@
  static EncodedJSValue JSC_HOST_CALL functionTotalCompileTime(JSGlobalObject*, CallFrame*);
  
  static EncodedJSValue JSC_HOST_CALL functionSetUnhandledRejectionCallback(JSGlobalObject*, CallFrame*);
+ static EncodedJSValue JSC_HOST_CALL functionAsDoubleNumber(JSGlobalObject*, CallFrame*);
  
 +// Custom function for receiving afl input
 +static EncodedJSValue JSC_HOST_CALL functionGetAFLInputArray(JSGlobalObject*, CallFrame*);
@@ -42,12 +29,12 @@ index 8111dd6bc0..e83d31ad78 100644
          Strict,
          Sloppy
      };
-@@ -652,10 +659,13 @@
-         addFunction(vm, "disableRichSourceInfo", functionDisableRichSourceInfo, 0);
-         addFunction(vm, "mallocInALoop", functionMallocInALoop, 0);
+@@ -621,10 +626,13 @@
          addFunction(vm, "totalCompileTime", functionTotalCompileTime, 0);
  
          addFunction(vm, "setUnhandledRejectionCallback", functionSetUnhandledRejectionCallback, 1);
+ 
+         addFunction(vm, "asDoubleNumber", functionAsDoubleNumber, 1);
 +
 +        // Custom function for receiving afl input
 +        addFunction(vm, "getAFLInputArray", functionGetAFLInputArray, 1);
@@ -56,10 +43,10 @@ index 8111dd6bc0..e83d31ad78 100644
      void addFunction(VM& vm, JSObject* object, const char* name, NativeFunction function, unsigned arguments)
      {
          Identifier identifier = Identifier::fromString(vm, name);
-@@ -2424,10 +2434,97 @@
- 
-     globalObject->setUnhandledRejectionCallback(vm, object);
-     return JSValue::encode(jsUndefined());
+@@ -2481,10 +2489,97 @@
+     double num = callFrame->argument(0).toNumber(globalObject);
+     RETURN_IF_EXCEPTION(scope, encodedJSValue());
+     return JSValue::encode(jsDoubleNumber(num));
  }
  
 +// Custom function for receiving afl input
