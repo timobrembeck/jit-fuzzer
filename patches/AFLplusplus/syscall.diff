@@ -13,7 +13,7 @@ index b13a170e..4af79175 100644
 +        // this pointer determines the destination of the afl input
 +        unsigned char *afl_input = arg1;
 +        // how many bytes are requested
-+        int afl_input_size = arg2;
++        unsigned int afl_input_size = arg2;
 +        // open file handler
 +        FILE *afl_input_file_pointer;
 +        if ((afl_input_file_pointer = fopen("/tmp/.cur_input","rb")) == NULL) {
@@ -26,7 +26,7 @@ index b13a170e..4af79175 100644
 +        fclose(afl_input_file_pointer);
 +        // print retrieved afl input bytes
 +        fprintf(stderr, "[QEMU] AFL input: ");
-+        for (size_t i = 0; i < afl_input_size; ++i) fprintf(stderr, "%02x ", afl_input[i]);
++        for (unsigned int i = 0; i < afl_input_size; ++i) fprintf(stderr, "%02x ", afl_input[i]);
 +        fprintf(stderr, "\n");
 +        // return success
 +        return EXIT_SUCCESS;

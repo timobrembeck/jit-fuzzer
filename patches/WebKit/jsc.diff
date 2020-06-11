@@ -1,5 +1,5 @@
 diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
-index 83ca231719..5fc8e9eb61 100644
+index 83ca231719..6918b5d9fc 100644
 --- a/Source/JavaScriptCore/jsc.cpp
 +++ b/Source/JavaScriptCore/jsc.cpp
 @@ -65,10 +65,12 @@
@@ -70,14 +70,14 @@ index 83ca231719..5fc8e9eb61 100644
 +    JSArray* afl_input_types_js = jsCast<JSArray*>(callFrame->argument(0));
 +
 +    // number of inputs which are requested from JS
-+    int afl_input_types_length = afl_input_types_js->length();
++    unsigned int afl_input_types_length = afl_input_types_js->length();
 +
 +    // cumulated size of all requested input types in bytes
-+    int afl_input_size = 0;
++    unsigned int afl_input_size = 0;
 +
 +    // convert JSArray 'afl_input_types_js' to C++ string array 'afl_input_types'
 +    std::string afl_input_types[afl_input_types_length];
-+    for (size_t i = 0; i < afl_input_types_length; ++i) {
++    for (unsigned int i = 0; i < afl_input_types_length; ++i) {
 +        std::string afl_input_type = afl_input_types_js->pop(globalObject).toString(globalObject)->value(globalObject).utf8().data();
 +        // reverse order because pop() returns the last element first
 +        afl_input_types[afl_input_types_length - i - 1] = afl_input_type;
@@ -86,7 +86,7 @@ index 83ca231719..5fc8e9eb61 100644
 +
 +    // print requested afl input types
 +    fprintf(stderr, "[JSC] Requested AFL input types: ");
-+    for (size_t i = 0; i < afl_input_types_length; ++i) fprintf(stderr, "%s, ", afl_input_types[i].c_str());
++    for (unsigned int i = 0; i < afl_input_types_length; ++i) fprintf(stderr, "%s, ", afl_input_types[i].c_str());
 +    fprintf(stderr, "\n");
 +
 +    // print requested afl input size
@@ -104,7 +104,7 @@ index 83ca231719..5fc8e9eb61 100644
 +
 +    // print afl input
 +    fprintf(stderr, "[JSC]  AFL input: ");
-+    for (size_t i = 0; i < afl_input_size; ++i) fprintf(stderr, "%02x ", afl_input[i]);
++    for (unsigned int i = 0; i < afl_input_size; ++i) fprintf(stderr, "%02x ", afl_input[i]);
 +    fprintf(stderr, "\n");
 +
 +    // initialize fuzzed data provider (FDL) - see https://github.com/google/fuzzing/blob/master/docs/split-inputs.md
@@ -114,7 +114,7 @@ index 83ca231719..5fc8e9eb61 100644
 +    JSArray* afl_input_array = JSArray::tryCreate(vm, structure, afl_input_types_length);
 +
 +    // fill return array
-+    for (size_t i = 0; i < afl_input_types_length; ++i) {
++    for (unsigned int i = 0; i < afl_input_types_length; ++i) {
 +        if (afl_input_types[i] == "bool"){
 +            bool afl_input_bool = fuzzed_data.ConsumeBool();
 +            afl_input_array->putDirectIndex(globalObject, i, jsBoolean(afl_input_bool));
