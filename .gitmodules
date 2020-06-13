@@ -10,3 +10,8 @@
 	update = rebase
 	ignore = dirty
 	shallow = true
+[submodule "fuzzilli"]
+	path = fuzzilli
+	url = https://github.com/googleprojectzero/fuzzilli
+	update = rebase
+	ignore = dirty
