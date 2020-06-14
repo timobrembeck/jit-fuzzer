@@ -4,7 +4,7 @@ all: fuzzilli afl jsc
 
 submodules:
 	# Check if submodules are initialized already
-	@if [ ! -f WebKit/Source/JavaScriptCore/jsc.cpp ]; then \
+	@if [[ ! -f WebKit/Source/JavaScriptCore/jsc.cpp ]]; then \
 		git submodule update --init --rebase --remote --jobs 2; \
 	fi
 
@@ -24,7 +24,7 @@ afl: submodules
 
 jsc_fuzzilli: submodules
 	# Check if jsc_afl was already compiled for AFL and copy build files if so
-	@if [ -d WebKit/WebKitBuild ] && [ ! -d WebKit/FuzzBuild ] ; then \
+	@if [[ -d WebKit/WebKitBuild && ! -d WebKit/FuzzBuild ]]; then \
 		cp -r WebKit/WebKitBuild WebKit/FuzzBuild; \
 	fi
 	# Patch JavaScriptCore for Fuzzilli
@@ -34,13 +34,13 @@ jsc_fuzzilli: submodules
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R WebKit/Source/JavaScriptCore/jsc.cpp fuzzilli/Targets/JavaScriptCore/Patches/webkit.patch
 	# Create symbolic link to JavaScriptCore executable (if not exists already)
-	@if [ ! -f jsc_fuzzilli ]; then \
+	@if [[ ! -f jsc_fuzzilli ]]; then \
 		ln -s WebKit/FuzzBuild/Debug/bin/jsc jsc_fuzzilli; \
 	fi
 
 jsc_afl: submodules
 	# Check if jsc was already compiled for Fuzzilli and copy build files if so
-	@if [ -d WebKit/FuzzBuild ] && [ ! -d WebKit/WebKitBuild ] ; then \
+	@if [[ -d WebKit/FuzzBuild && ! -d WebKit/WebKitBuild ]]; then \
 		cp -r WebKit/FuzzBuild WebKit/WebKitBuild; \
 	fi
 	# Patch JavaScriptCore for AFL
@@ -50,7 +50,7 @@ jsc_afl: submodules
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R WebKit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff
 	# Create symbolic link to JavaScriptCore executable (if not exists already)
-	@if [ ! -f jsc_afl ]; then \
+	@if [[ ! -f jsc_afl ]]; then \
 		ln -s WebKit/WebKitBuild/Debug/bin/jsc jsc_afl; \
 	fi
 	# Store address of forkserver function to .afl_entrypoint
@@ -63,14 +63,14 @@ clean:
 	# Reset all local changes of the submodules (e.g. applied patches)
 	git submodule foreach 'git reset --hard'
 	# Remove WebKit build files
-	@if [ -d WebKit/WebKitBuild ]; then \
+	@if [[ -d WebKit/WebKitBuild ]]; then \
 		rm -rfv WebKit/WebKitBuild; \
 	fi
-	@if [ -d WebKit/FuzzBuild ]; then \
+	@if [[ -d WebKit/FuzzBuild ]]; then \
 		rm -rfv WebKit/FuzzBuild; \
 	fi
 	# Remove symbolic link to jsc executable
-	@if [ -f jsc ]; then \
+	@if [[ -f jsc ]]; then \
 		rm -v jsc; \
 	fi
 	# Remove AFLplusplus build files
