@@ -3,7 +3,8 @@
 # AFL output
 /out
 # JSC symlink
-/jsc
+/jsc_fuzzilli
+/jsc_afl
 # Failed patches
 *.orig
 *.rej
