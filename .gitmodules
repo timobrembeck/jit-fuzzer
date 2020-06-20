@@ -1,7 +1,6 @@
 [submodule "AFLplusplus"]
 	path = AFLplusplus
 	url = https://github.com/AFLplusplus/AFLplusplus.git
-	branch = dev
 	update = rebase
 	ignore = dirty
 [submodule "webkit"]
