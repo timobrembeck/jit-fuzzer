@@ -9,4 +9,8 @@
 *.orig
 *.rej
 # Address of start forkserver function
-.afl_entrypoint
+/.afl_entrypoint
+# AFL input sizes for all test scripts
+/.afl_input_sizes.json
+# Core dumps
+*.core
