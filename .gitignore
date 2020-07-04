@@ -2,6 +2,10 @@
 .idea
 # AFL output
 /out
+# Fuzzilli results
+/fuzzilli_results
+# Target scripts
+/target_scripts
 # JSC symlink
 /jsc_fuzzilli
 /jsc_afl

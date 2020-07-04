@@ -3,14 +3,9 @@
 cd $(dirname "$BASH_SOURCE")
 
 # check if dependencies are built
-if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/WebKitBuild/Debug/bin/jsc ]]; then
+if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/WebKitBuild/Debug/bin/jsc || ! -f ./WebKit/FuzzBuild/Debug/bin/jsc ]]; then
     echo -e "Please build the dependencies by executing\n\n  $(whoami)@$(hostname):$(dirs +0)\$ make\n\nand restart this script." >&2
     exit 1
-fi
-
-# do not send core dumps to external utility
-if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
-    echo core | sudo tee /proc/sys/kernel/core_pattern
 fi
 
 # optimize cpu scaling
@@ -18,11 +13,29 @@ if [[ "$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)" != "perform
     echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 fi
 
+# check if fuzzilli results and enough interesting samples exist
+if [[ ! -d fuzzilli_results/interesting ]] || [[ $(ls -1 fuzzilli_results/interesting | wc -l) < 100 ]]; then
+    # do not send core dumps to external utility
+    if [[ "$(cat /proc/sys/kernel/core_pattern)" != "|/bin/false" ]]; then
+        sudo sysctl -w 'kernel.core_pattern=|/bin/false' > /dev/null
+    fi
+    # generate interesting js-scripts
+    cd fuzzilli
+    IMPORT_STATE=$(if [[ -f ../fuzzilli_results/state.json ]]; then printf "--importState=../fuzzilli_results/state.json"; fi)
+    swift run FuzzilliCli --numIterations=20 --exportState --exportStatistics --storagePath=../fuzzilli_results ${IMPORT_STATE} --logLevel=verbose --profile=jsc ../jsc_fuzzilli
+    cd ..
+fi
+
+# do not send core dumps to external utility
+if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
+    sudo sysctl -w 'kernel.core_pattern=core' > /dev/null
+fi
+
 # activate debug mode
-#export AFL_DEBUG=1
+export AFL_DEBUG=1
 
 # activate child output
-#export AFL_DEBUG_CHILD_OUTPUT=1
+export AFL_DEBUG_CHILD_OUTPUT=1
 
 # set afl tmp dir so system tmp dir (which is mounted as tmpfs in ram)
 export AFL_TMPDIR="/tmp"
@@ -37,5 +50,24 @@ if [[ -f .afl_entrypoint ]]; then
     export AFL_ENTRYPOINT=$(cat .afl_entrypoint)
 fi
 
+# create target directory
+if [[ ! -d target_scripts ]]; then
+    mkdir target_scripts
+fi
+
+# find interesting sample to fuzz
+mapfile -t JS_FILES < <( find fuzzilli_results/interesting -type f -name "*.js" )
+
+# iterate array
+for JS_FILE in "${JS_FILES[@]}"; do
+    # pick first file which was not yet fuzzed
+	if [[ ! -f target_scripts/$(basename ${JS_FILE}) ]]; then
+        break
+	fi
+done
+
+# convert js file
+./js_converter.py ${JS_FILE} -o target_scripts
+
 # start to fuzz
-./AFLplusplus/afl-fuzz -i in -o out -t 9999999999999999 -m none -d -Q ./jsc fuzz.js
+./AFLplusplus/afl-fuzz -i in -o out -t 9999999999999999 -m none -d -Q ./jsc_afl target_scripts/$(basename ${JS_FILE})
