@@ -55,13 +55,19 @@ if [[ ! -d target_scripts ]]; then
     mkdir target_scripts
 fi
 
+# create afl input directory
+if [[ ! -d afl_input ]]; then
+    mkdir afl_input
+fi
+
 # find interesting sample to fuzz
 mapfile -t JS_FILES < <( find fuzzilli_results/interesting -type f -name "*.js" )
 
 # iterate array
 for JS_FILE in "${JS_FILES[@]}"; do
     # pick first file which was not yet fuzzed
-	if [[ ! -f target_scripts/$(basename ${JS_FILE}) ]]; then
+    JS_FILENAME=$(basename ${JS_FILE})
+	if [[ ! -f target_scripts/${JS_FILENAME} ]]; then
         break
 	fi
 done
@@ -69,5 +75,11 @@ done
 # convert js file
 ./js_converter.py ${JS_FILE} -o target_scripts
 
+# get desired afl input size
+AFL_INPUT_SIZE=$(python -c "import json; file = open('.afl_input_sizes.json'); data = json.load(file); print(data['target_scripts/${JS_FILENAME}'])")
+
+# write test case of desired size
+dd if=/dev/urandom of=afl_input/afl_input_seed bs=1 count=${AFL_INPUT_SIZE} > /dev/null
+
 # start to fuzz
-./AFLplusplus/afl-fuzz -i in -o out -t 9999999999999999 -m none -d -Q ./jsc_afl target_scripts/$(basename ${JS_FILE})
+./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -Q ./jsc_afl target_scripts/${JS_FILENAME}

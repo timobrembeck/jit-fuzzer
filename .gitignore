@@ -1,7 +1,8 @@
 # IntelliJ IDEA
 .idea
-# AFL output
-/out
+# AFL in & out
+/afl_input
+/afl_results
 # Fuzzilli results
 /fuzzilli_results
 # Target scripts
