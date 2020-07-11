@@ -19,3 +19,5 @@
 /.afl_input_sizes.json
 # Core dumps
 *.core
+# C make
+/__cmake_systeminformation/

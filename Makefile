@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 .PHONY: all submodules fuzzilli afl jsc jsc_fuzzilli jsc_afl clean
 
 all: fuzzilli afl jsc
