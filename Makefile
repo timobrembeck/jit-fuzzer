@@ -1,20 +1,32 @@
 SHELL := /bin/bash
 
-.PHONY: all submodules fuzzilli afl jsc jsc_fuzzilli jsc_afl clean
+.PHONY: all fuzzilli afl jsc jsc_fuzzilli jsc_afl clean
 
 all: fuzzilli afl jsc
 
-submodules:
-	# Check if submodules are initialized already
-	@if [[ ! -f WebKit/Source/JavaScriptCore/jsc.cpp ]]; then \
-		git submodule update --init --rebase --remote --jobs 2; \
+fuzzilli:
+	# Check if submodule is initialized already
+	@if [[ ! -f fuzzilli/Package.swift ]]; then \
+		if [[ -d .git ]]; then \
+			git submodule update fuzzilli; \
+		else \
+			echo -e "Please run\n\n    git submodule update\n\nbefore building the docker image." >&2; \
+			exit 1; \
+		fi; \
 	fi
-
-fuzzilli: submodules
 	# Compile fuzzilli
 	cd fuzzilli && swift build
 
-afl: submodules
+afl:
+	# Check if submodule is initialized already
+	@if [[ ! -f AFLplusplus/Makefile ]]; then \
+		if [[ -d .git ]]; then \
+			git submodule update AFLplusplus; \
+		else \
+			echo -e "Please run\n\n    git submodule update\n\nbefore building the docker image." >&2; \
+			exit 1; \
+		fi; \
+	fi
 	# Compile AFLplusplus
 	cd AFLplusplus && make all
 	# Patch QEMU for AFLplusplus
@@ -24,10 +36,15 @@ afl: submodules
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R AFLplusplus/qemu_mode/build_qemu_support.sh patches/AFLplusplus/build_qemu_support.diff
 
-jsc_fuzzilli: submodules
-	# Check if jsc_afl was already compiled for AFL and copy build files if so
-	@if [[ -d WebKit/WebKitBuild && ! -d WebKit/FuzzBuild ]]; then \
-		cp -r WebKit/WebKitBuild WebKit/FuzzBuild; \
+jsc_fuzzilli:
+	# Check if submodule is initialized already
+	@if [[ ! -f WebKit/Makefile ]]; then \
+		if [[ -d .git ]]; then \
+			git submodule update WebKit; \
+		else \
+			echo -e "Please run\n\n    git submodule update\n\nbefore building the docker image." >&2; \
+			exit 1; \
+		fi; \
 	fi
 	# Patch JavaScriptCore for Fuzzilli
 	patch WebKit/Source/JavaScriptCore/jsc.cpp fuzzilli/Targets/JavaScriptCore/Patches/webkit.patch
@@ -40,10 +57,15 @@ jsc_fuzzilli: submodules
 		ln -s WebKit/FuzzBuild/Debug/bin/jsc jsc_fuzzilli; \
 	fi
 
-jsc_afl: submodules
-	# Check if jsc was already compiled for Fuzzilli and copy build files if so
-	@if [[ -d WebKit/FuzzBuild && ! -d WebKit/WebKitBuild ]]; then \
-		cp -r WebKit/FuzzBuild WebKit/WebKitBuild; \
+jsc_afl:
+	# Check if submodule is initialized already
+	@if [[ ! -f WebKit/Makefile ]]; then \
+		if [[ -d .git ]]; then \
+			git submodule update WebKit; \
+		else \
+			echo -e "Please run\n\n    git submodule update\n\nbefore building the docker image." >&2; \
+			exit 1; \
+		fi; \
 	fi
 	# Patch JavaScriptCore for AFL
 	patch WebKit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff

@@ -1,16 +1,19 @@
 [submodule "AFLplusplus"]
 	path = AFLplusplus
 	url = https://github.com/AFLplusplus/AFLplusplus.git
-	update = rebase
+	update = checkout
+	fetchRecurseSubmodules = true
 	ignore = dirty
+	shallow = true
 [submodule "webkit"]
 	path = WebKit
 	url = https://github.com/WebKit/webkit
-	update = rebase
+	update = checkout
 	ignore = dirty
 	shallow = true
 [submodule "fuzzilli"]
 	path = fuzzilli
 	url = https://github.com/googleprojectzero/fuzzilli
-	update = rebase
+	update = checkout
 	ignore = dirty
+	shallow = true
