@@ -81,12 +81,12 @@ def convert_file(filename: str) -> str:
     return converted_file
 
 
-def string_replacement_wrapper(_: re.Match) -> str:
+def string_replacement_wrapper(_) -> str:
     """
     This function is a wrapper for replacements of string variables.
 
     :param _: Unused regex match parameter
-    :type _: re.Match
+    :type _: _sre.SRE_Match (python3.6 and before) or re.Match (python3.7 onwards)
 
     :return: A replacement string
     :rtype: str
@@ -94,12 +94,12 @@ def string_replacement_wrapper(_: re.Match) -> str:
     return replacement("string")
 
 
-def double_replacement_wrapper(_: re.Match) -> str:
+def double_replacement_wrapper(_) -> str:
     """
     This function is a wrapper for replacements of double variables.
 
     :param _: Unused regex match parameter
-    :type _: re.Match
+    :type _: _sre.SRE_Match (python3.6 and before) or re.Match (python3.7 onwards)
 
     :return: A replacement string
     :rtype: str
@@ -107,12 +107,12 @@ def double_replacement_wrapper(_: re.Match) -> str:
     return replacement("double")
 
 
-def integer_replacement_wrapper(match: re.Match) -> str:
+def integer_replacement_wrapper(match) -> str:
     """
     This function is a wrapper for replacements of integer variables.
 
     :param match: Regex match parameter to catch the prefix of the integer
-    :type match: re.Match
+    :type match: _sre.SRE_Match (python3.6 and before) or re.Match (python3.7 onwards)
 
     :return: A replacement string
     :rtype: str
