@@ -14,7 +14,9 @@ fuzzilli:
 			exit 1; \
 		fi; \
 	fi
-	# Compile fuzzilli
+	# Patch Fuzzilli (don't undo because swift run would compile unpatched state again)
+	patch -N fuzzilli/Sources/Fuzzilli/Fuzzer.swift patches/fuzzilli/Fuzzer.diff || true
+	# Compile Fuzzilli
 	cd fuzzilli && swift build
 
 afl:
@@ -98,4 +100,4 @@ clean:
 		rm -v jsc; \
 	fi
 	# Remove AFLplusplus build files
-	cd AFLplusplus && make clean
+	cd AFLplusplus && make deepclean
