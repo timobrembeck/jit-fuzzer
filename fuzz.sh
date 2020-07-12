@@ -4,13 +4,18 @@ cd $(dirname "$BASH_SOURCE")
 
 # check if dependencies are built
 if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/WebKitBuild/Debug/bin/jsc || ! -f ./WebKit/FuzzBuild/Debug/bin/jsc ]]; then
-    echo -e "Please build the dependencies by executing\n\n  $(whoami)@$(hostname):$(dirs +0)\$ make\n\nand restart this script." >&2
+    echo -e "Please build the dependencies by executing\n\n    $(whoami)@$(hostname):$(dirs +0)\$ make\n\nand restart this script." >&2
     exit 1
 fi
 
 # optimize cpu scaling
 if [[ "$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)" != "performance" ]]; then
-    echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+    # check if file is writable
+    if sudo test -w /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor; then
+        echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+    else
+        echo "Please make sure your CPU frequency scaling is set to performance." >&2
+    fi
 fi
 
 # set afl entrypoint
@@ -45,9 +50,15 @@ while true; do
 
     # check if fuzzilli results exist and if they contain interesting samples which are not yet in target scripts
     if [[ ! -d fuzzilli_results/interesting ]] || ! diff -q fuzzilli_results/interesting target_scripts | grep -q "Only in fuzzilli_results/interesting:"; then
-        # do not send core dumps to external utility
-        if [[ "$(cat /proc/sys/kernel/core_pattern)" != "|/bin/false" ]]; then
-            sudo sysctl -w 'kernel.core_pattern=|/bin/false' > /dev/null
+        # do not send core dumps to external utility (also accept if there are core dumps)
+        if [[ "$(cat /proc/sys/kernel/core_pattern)" != "|/bin/false" ]] && [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
+            # check if file is writable
+            if sudo test -w /proc/sys/kernel/core_pattern; then
+                sudo sysctl -w 'kernel.core_pattern=|/bin/false' > /dev/null
+            else
+                echo -e "Please set your host's kernel core pattern to 'core' by running\n\n    sudo sysctl -w 'kernel.core_pattern=core'" >&2
+                exit 1
+            fi
         fi
         # generate interesting js-scripts
         cd fuzzilli
@@ -71,14 +82,20 @@ while true; do
     ./js_converter.py ${JS_FILE} -o target_scripts
 
     # get desired afl input size
-    AFL_INPUT_SIZE=$(python -c "import json; file = open('.afl_input_sizes.json'); data = json.load(file); print(data['target_scripts/${JS_FILENAME}'])")
+    AFL_INPUT_SIZE=$(python3 -c "import json; file = open('.afl_input_sizes.json'); data = json.load(file); print(data['target_scripts/${JS_FILENAME}'])")
 
     # write test case of desired size
     dd if=/dev/urandom of=afl_input/afl_input_seed bs=1 count=${AFL_INPUT_SIZE} > /dev/null
 
     # do not send core dumps to external utility
     if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
-        sudo sysctl -w 'kernel.core_pattern=core' > /dev/null
+        # check if file is writable
+        if sudo test -w /proc/sys/kernel/core_pattern; then
+            sudo sysctl -w 'kernel.core_pattern=core' > /dev/null
+        else
+            echo -e "Please set your host's kernel core pattern to 'core' by running\n\n    sudo sysctl -w 'kernel.core_pattern=core'" >&2
+            exit 1
+        fi
     fi
 
     # remove current input if exists
@@ -89,7 +106,7 @@ while true; do
     # start to fuzz
     ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc_afl target_scripts/${JS_FILENAME}
 
-    # enable aborting between runs ([CTRL + C] only aborts AFL)
+    # enable aborting between runs (otherwise [CTRL + C] only aborts AFL)
     echo "If you want to abort, please press [CTRL + C] now."
     sleep 3
 
