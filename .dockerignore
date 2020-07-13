@@ -1,0 +1,36 @@
+# IntelliJ IDEA
+.idea
+# Git
+/.git
+/.gitignore
+/.gitmodules
+/.pre-commit-config.yaml
+# Docker
+/Dockerfile
+/.dockerignore
+# Pipenv
+/Pipfile
+/Pipfile.lock
+# AFL
+/AFLplusplus/afl-fuzz
+/afl_input
+/afl_results
+/.afl_entrypoint
+/.afl_input_sizes.json
+# Fuzzilli
+/fuzzilli/.build
+/fuzzilli_results
+# WebKit
+/WebKit/FuzzBuild/
+/WebKit/WebKitBuild/
+/jsc_fuzzilli
+/jsc_afl
+# Target scripts
+/target_scripts
+# Failed patches
+*.orig
+*.rej
+# Core dumps
+*.core
+# C make
+/__cmake_systeminformation/
