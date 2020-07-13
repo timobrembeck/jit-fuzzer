@@ -3,7 +3,7 @@
 cd $(dirname "$BASH_SOURCE")
 
 # check if dependencies are built
-if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/WebKitBuild/Debug/bin/jsc || ! -f ./WebKit/FuzzBuild/Debug/bin/jsc ]]; then
+if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/AFLBuild/Debug/bin/jsc || ! -f ./WebKit/FuzzBuild/Debug/bin/jsc ]]; then
     echo -e "Please build the dependencies by executing\n\n    $(whoami)@$(hostname):$(dirs +0)\$ make\n\nand restart this script." >&2
     exit 1
 fi

@@ -72,12 +72,12 @@ jsc_afl:
 	# Patch JavaScriptCore for AFL
 	patch WebKit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff
 	# Compile WebKit for AFL
-	WEBKIT_OUTPUTDIR=WebKitBuild ./WebKit/Tools/Scripts/build-jsc --jsc-only --debug --cmakeargs="-DENABLE_STATIC_JSC=ON -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER='/usr/bin/clang' -DCMAKE_CXX_COMPILER='/usr/bin/clang++' -DCMAKE_CXX_FLAGS='-g -O0 -lrt -no-pie -no-pthread' -DCMAKE_CXX_FLAGS_DEBUG='-g -O0 -no-pie -no-pthread' -DCMAKE_C_FLAGS='-g -O0 -no-pie -no-pthread' -DCMAKE_C_FLAGS_DEBUG='-g -O0 -no-pie -no-pthread'"
+	WEBKIT_OUTPUTDIR=AFLBuild ./WebKit/Tools/Scripts/build-jsc --jsc-only --debug --cmakeargs="-DENABLE_STATIC_JSC=ON -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER='/usr/bin/clang' -DCMAKE_CXX_COMPILER='/usr/bin/clang++' -DCMAKE_CXX_FLAGS='-g -O0 -lrt -no-pie -no-pthread' -DCMAKE_CXX_FLAGS_DEBUG='-g -O0 -no-pie -no-pthread' -DCMAKE_C_FLAGS='-g -O0 -no-pie -no-pthread' -DCMAKE_C_FLAGS_DEBUG='-g -O0 -no-pie -no-pthread'"
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R WebKit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff
 	# Create symbolic link to JavaScriptCore executable (if not exists already)
 	@if [[ ! -f jsc_afl ]]; then \
-		ln -s WebKit/WebKitBuild/Debug/bin/jsc jsc_afl; \
+		ln -s WebKit/AFLBuild/Debug/bin/jsc jsc_afl; \
 	fi
 	# Store address of forkserver function to .afl_entrypoint
 	@echo -n "0x" > .afl_entrypoint
@@ -89,8 +89,8 @@ clean:
 	# Reset all local changes of the submodules (e.g. applied patches)
 	git submodule foreach 'git reset --hard'
 	# Remove WebKit build files
-	@if [[ -d WebKit/WebKitBuild ]]; then \
-		rm -rfv WebKit/WebKitBuild; \
+	@if [[ -d WebKit/AFLBuild ]]; then \
+		rm -rfv WebKit/AFLBuild; \
 	fi
 	@if [[ -d WebKit/FuzzBuild ]]; then \
 		rm -rfv WebKit/FuzzBuild; \
