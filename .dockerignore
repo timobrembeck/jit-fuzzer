@@ -34,3 +34,5 @@
 *.core
 # C make
 /__cmake_systeminformation/
+# Final results
+/results/

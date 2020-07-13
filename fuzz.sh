@@ -33,6 +33,11 @@ if [[ ! -d afl_input ]]; then
     mkdir afl_input
 fi
 
+# create directory for final output
+if [[ ! -d results ]]; then
+    mkdir results
+fi
+
 # force english locale to make output of diff command comparable
 export LANG=en_US.utf8
 
@@ -105,6 +110,14 @@ while true; do
 
     # start to fuzz
     ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc_afl target_scripts/${JS_FILENAME}
+
+    # save results if they are interesting
+    if [[ "$(ls -A afl_results/crashes)" ]] || [[ "$(ls -A afl_results/hangs)" ]]; then
+        cp -r afl_results results/${JS_FILENAME}
+    fi
+
+    # clear old results
+    rm -r afl_results
 
     # enable aborting between runs (otherwise [CTRL + C] only aborts AFL)
     echo "If you want to abort, please press [CTRL + C] now."
