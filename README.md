@@ -49,3 +49,6 @@ docker logs -f jit-fuzzer
 ```
 ./fuzz.sh
 ```
+
+## How does it work?
+[![Control-flow graph](https://github.com/timoludwig/jit-fuzzer/raw/assets/jit-fuzzer.svg)](https://github.com/timoludwig/jit-fuzzer/blob/assets/jit-fuzzer.svg)
