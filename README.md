@@ -45,36 +45,28 @@ If you want to modify and/or build the project yourself, you have the choice bet
         <tr>
             <td>Compile patched versions of Fuzzilli, AFLplusplus and WebKit (this may take a while, even on modern hardware):</td>
             <td>
-                <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
 <pre style="margin: 0; line-height: 125%">
 docker build -t jit-fuzzer .
 </pre>
-                </div>
             </td>
             <td>
-                <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
 <pre style="margin: 0; line-height: 125%">
 make
 </pre>
-                </div>
             </td>
         </tr>
         <tr>
             <td>Generate interesting js samples with Fuzzilli and fuzz their JIT-compiled code in AFL:</td>
             <td>
                 First run (create container from image):
-                <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
 <pre style="margin: 0; line-height: 125%">
 docker run --name jit-fuzzer jit-fuzzer
 </pre>
-                </div>
                 Subsequent runs (start of existing container):
-                <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
 <pre style="margin: 0; line-height: 125%">
 docker start jit-fuzzer
 docker logs -f jit-fuzzer
 </pre>
-                </div>
             </td>
             <td>
                 <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;">
