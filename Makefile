@@ -55,7 +55,7 @@ jsc_fuzzilli:
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R WebKit/Source/JavaScriptCore/jsc.cpp fuzzilli/Targets/JavaScriptCore/Patches/webkit.patch
 	# Create symbolic link to JavaScriptCore executable (if not exists already)
-	@if [[ ! -f jsc_fuzzilli ]]; then \
+	@if [[ ! -L jsc_fuzzilli ]]; then \
 		ln -s WebKit/FuzzBuild/Debug/bin/jsc jsc_fuzzilli; \
 	fi
 
@@ -76,7 +76,7 @@ jsc_afl:
 	# Undo patch to make sure submodule repository can be pulled without conflicts
 	patch -R WebKit/Source/JavaScriptCore/jsc.cpp patches/WebKit/jsc.diff
 	# Create symbolic link to JavaScriptCore executable (if not exists already)
-	@if [[ ! -f jsc_afl ]]; then \
+	@if [[ ! -L jsc_afl ]]; then \
 		ln -s WebKit/AFLBuild/Debug/bin/jsc jsc_afl; \
 	fi
 	# Store address of forkserver function to .afl_entrypoint
@@ -96,8 +96,11 @@ clean:
 		rm -rfv WebKit/FuzzBuild; \
 	fi
 	# Remove symbolic link to jsc executable
-	@if [[ -f jsc ]]; then \
-		rm -v jsc; \
+	@if [[ -L jsc_fuzzilli ]]; then \
+		rm -v jsc_fuzzilli; \
 	fi
+	@if [[ -L jsc_afl ]]; then \
+                rm -v jsc_afl; \
+        fi
 	# Remove AFLplusplus build files
 	cd AFLplusplus && make deepclean
