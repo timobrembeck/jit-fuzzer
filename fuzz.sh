@@ -47,6 +47,9 @@ export LANG=en_US.utf8
 # activate child output
 #export AFL_DEBUG_CHILD_OUTPUT=1
 
+# activate qemu strace
+#export QEMU_STRACE=1
+
 # set afl tmp dir so system tmp dir (which is mounted as tmpfs in ram)
 export AFL_TMPDIR="/tmp"
 
