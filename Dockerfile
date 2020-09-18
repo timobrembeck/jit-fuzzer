@@ -95,4 +95,4 @@ COPY --chown=docker:docker --from=jsc jit-fuzzer/jsc_fuzzilli jit-fuzzer/jsc_afl
 USER docker
 
 # Start fuzzing
-CMD ["/bin/bash", "fuzz.sh"]
+CMD ["/bin/bash", "-x", "fuzz.sh"]
