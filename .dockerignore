@@ -22,7 +22,7 @@
 /fuzzilli_results
 # WebKit
 /WebKit/FuzzBuild/
-/WebKit/WebKitBuild/
+/WebKit/AFLBuild/
 /jsc_fuzzilli
 /jsc_afl
 # Target scripts
