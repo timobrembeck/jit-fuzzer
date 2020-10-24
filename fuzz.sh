@@ -70,13 +70,13 @@ while true; do
         fi
         # generate interesting js-scripts
         cd fuzzilli
-        IMPORT_STATE=$(if [[ -f ../fuzzilli_results/state.json ]]; then printf "--importState=../fuzzilli_results/state.json"; fi)
-        swift run FuzzilliCli --numIterations=20 --exportState --exportStatistics --storagePath=../fuzzilli_results ${IMPORT_STATE} --logLevel=verbose --profile=jsc ../jsc_fuzzilli
+        RESUME=$(if [[ -d ../fuzzilli_results/corpus ]]; then printf "--resume"; fi)
+        swift run FuzzilliCli --numIterations=20 --exportStatistics --storagePath=../fuzzilli_results ${RESUME} --logLevel=verbose --profile=jsc ../jsc_fuzzilli
         cd ..
     fi
 
     # find interesting sample to fuzz
-    mapfile -t JS_FILES < <( find fuzzilli_results/interesting -type f -name "*.js" )
+    mapfile -t JS_FILES < <( find fuzzilli_results/corpus -type f -name "*.js" )
     # iterate array
     for JS_FILE in "${JS_FILES[@]}"; do
         # pick first file which was not yet fuzzed
