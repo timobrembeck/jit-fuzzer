@@ -41,7 +41,7 @@ FROM ubuntu:18.04 as jsc
 RUN apt-get update && apt-get install -y \
     bison \
     build-essential \
-    clang \
+    clang-10 \
     cmake \
     flex \
     git-core \

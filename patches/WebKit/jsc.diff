@@ -1,12 +1,12 @@
 diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
-index 83ca231719..6918b5d9fc 100644
+index 4b706e2ff2..b03d753392 100644
 --- a/Source/JavaScriptCore/jsc.cpp
 +++ b/Source/JavaScriptCore/jsc.cpp
-@@ -65,10 +65,12 @@
- #include "TestRunnerUtils.h"
+@@ -68,10 +68,12 @@
  #include "TypedArrayInlines.h"
  #include "VMInspector.h"
  #include "WasmCapabilities.h"
+ #include "WasmFaultSignalHandler.h"
  #include "WasmMemory.h"
 +#include <fuzzer/FuzzedDataProvider.h> // fuzzed data provider for splitting afl input
 +#include <map> // map for fuzzing data type sizes
@@ -15,42 +15,42 @@ index 83ca231719..6918b5d9fc 100644
  #include <string.h>
  #include <sys/stat.h>
  #include <sys/types.h>
-@@ -352,10 +354,13 @@
- static EncodedJSValue JSC_HOST_CALL functionTotalCompileTime(JSGlobalObject*, CallFrame*);
+@@ -361,10 +363,13 @@ static JSC_DECLARE_HOST_FUNCTION(functionMallocInALoop);
+ static JSC_DECLARE_HOST_FUNCTION(functionTotalCompileTime);
  
- static EncodedJSValue JSC_HOST_CALL functionSetUnhandledRejectionCallback(JSGlobalObject*, CallFrame*);
- static EncodedJSValue JSC_HOST_CALL functionAsDoubleNumber(JSGlobalObject*, CallFrame*);
+ static JSC_DECLARE_HOST_FUNCTION(functionSetUnhandledRejectionCallback);
+ static JSC_DECLARE_HOST_FUNCTION(functionAsDoubleNumber);
  
 +// Custom function for receiving afl input
-+static EncodedJSValue JSC_HOST_CALL functionGetAFLInputArray(JSGlobalObject*, CallFrame*);
++static JSC_DECLARE_HOST_FUNCTION(functionGetAFLInputArray);
 +
  struct Script {
      enum class StrictMode {
          Strict,
          Sloppy
      };
-@@ -621,10 +626,13 @@
-         addFunction(vm, "totalCompileTime", functionTotalCompileTime, 0);
+@@ -651,10 +656,13 @@ private:
  
          addFunction(vm, "setUnhandledRejectionCallback", functionSetUnhandledRejectionCallback, 1);
  
          addFunction(vm, "asDoubleNumber", functionAsDoubleNumber, 1);
-+
+ 
 +        // Custom function for receiving afl input
 +        addFunction(vm, "getAFLInputArray", functionGetAFLInputArray, 1);
-     }
-     
-     void addFunction(VM& vm, JSObject* object, const char* name, NativeFunction function, unsigned arguments)
-     {
-         Identifier identifier = Identifier::fromString(vm, name);
-@@ -2481,10 +2489,97 @@
++
+         if (Options::exposeCustomSettersOnGlobalObjectForTesting()) {
+             {
+                 CustomGetterSetter* custom = CustomGetterSetter::create(vm, nullptr, testCustomAccessorSetter);
+                 Identifier identifier = Identifier::fromString(vm, "testCustomAccessorSetter");
+                 this->putDirectCustomAccessor(vm, identifier, custom, PropertyAttribute::DontEnum | PropertyAttribute::DontDelete | PropertyAttribute::CustomAccessor);
+@@ -2603,10 +2611,97 @@ JSC_DEFINE_HOST_FUNCTION(functionAsDoubleNumber, (JSGlobalObject* globalObject,
      double num = callFrame->argument(0).toNumber(globalObject);
      RETURN_IF_EXCEPTION(scope, encodedJSValue());
      return JSValue::encode(jsDoubleNumber(num));
  }
  
 +// Custom function for receiving afl input
-+EncodedJSValue JSC_HOST_CALL functionGetAFLInputArray(JSGlobalObject* globalObject, CallFrame* callFrame) {
++JSC_DEFINE_HOST_FUNCTION(functionGetAFLInputArray, (JSGlobalObject* globalObject, CallFrame* callFrame)) {
 +
 +    // debug output
 +    fprintf(stderr, "##########################################################################################\n");
