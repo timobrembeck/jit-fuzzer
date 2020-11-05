@@ -70,7 +70,9 @@ while true; do
         fi
         # generate interesting js-scripts
         cd fuzzilli
-        RESUME=$(if [[ -d ../fuzzilli_results/corpus ]]; then printf "--resume"; fi)
+        if [[ -d ../fuzzilli_results/corpus ]]; then
+            RESUME="--resume"
+        fi
         swift run FuzzilliCli --numIterations=20 --exportStatistics --storagePath=../fuzzilli_results ${RESUME} --logLevel=verbose --profile=jsc ../jsc_fuzzilli
         cd ..
     fi
