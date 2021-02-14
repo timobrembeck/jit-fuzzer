@@ -1,10 +1,10 @@
 diff --git a/Sources/Fuzzilli/Fuzzer.swift b/Sources/Fuzzilli/Fuzzer.swift
-index 632efb6..e07637e 100644
+index b328d76..0611a5e 100644
 --- a/Sources/Fuzzilli/Fuzzer.swift
 +++ b/Sources/Fuzzilli/Fuzzer.swift
-@@ -601,15 +601,15 @@ public class Fuzzer {
-         }
- 
+@@ -594,15 +594,15 @@ public class Fuzzer {
+         assert(isInitialized)
+
          #if os(Linux)
          do {
              let corePattern = try String(contentsOfFile: "/proc/sys/kernel/core_pattern", encoding: String.Encoding.ascii)
