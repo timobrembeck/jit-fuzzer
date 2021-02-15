@@ -1,12 +1,18 @@
 diff --git a/qemu_mode/build_qemu_support.sh b/qemu_mode/build_qemu_support.sh
-index a7bfe20..6fb3efd 100755
+index 50e5d4e..64b38c5 100755
 --- a/qemu_mode/build_qemu_support.sh
 +++ b/qemu_mode/build_qemu_support.sh
-@@ -179,6 +179,7 @@ patch -p1 <../patches/elfload.diff || exit 1
- patch -p1 <../patches/bsd-elfload.diff || exit 1
- patch -p1 <../patches/cpu-exec.diff || exit 1
- patch -p1 <../patches/syscall.diff || exit 1
+@@ -133,10 +133,13 @@ echo "[+] Got qemuafl."
+ cd "qemuafl" || exit 1
+ echo "[*] Checking out $QEMUAFL_VERSION"
+ sh -c 'git stash && git stash drop' 1>/dev/null 2>/dev/null
+ git checkout "$QEMUAFL_VERSION" || echo Warning: could not check out to commit $QEMUAFL_VERSION
+ 
++echo "[*] Patching custom syscall"
 +patch -p1 <../../../patches/AFLplusplus/syscall.diff || exit 1
- patch -p1 <../patches/translate-all.diff || exit 1
- patch -p1 <../patches/tcg.diff || exit 1
- patch -p1 <../patches/i386-translate.diff || exit 1
++
+ echo "[*] Making sure imported headers matches"
+ cp "../../include/config.h" "./qemuafl/imported/" || exit 1
+ cp "../../include/cmplog.h" "./qemuafl/imported/" || exit 1
+ cp "../../include/snapshot-inl.h" "./qemuafl/imported/" || exit 1
+ cp "../../include/types.h" "./qemuafl/imported/" || exit 1

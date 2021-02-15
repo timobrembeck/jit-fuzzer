@@ -1,13 +1,13 @@
 diff --git a/linux-user/syscall.c b/linux-user/syscall.c
-index b13a170e..4af79175 100644
+index ff74df0b97..07475de3f6 100644
 --- a/linux-user/syscall.c
 +++ b/linux-user/syscall.c
-@@ -11502,10 +11502,33 @@
-     case TARGET_NR_swapcontext:
-         /* PowerPC specific.  */
-         return do_swapcontext(cpu_env, arg1, arg2, arg3);
- #endif
- 
+@@ -13217,10 +13217,33 @@ static abi_long do_syscall1(void *cpu_env, int num, abi_long arg1,
+         } else {
+           fprintf(stderr, "QAsan syscall unsupported without enabling QASan mode (AFL_USE_QASAN)\n");
+           return -TARGET_ENOSYS;
+         }
+
 +    /* Custom syscall for fuzzing JSC JIT */
 +    case 536: ;
 +        // this pointer determines the destination of the afl input

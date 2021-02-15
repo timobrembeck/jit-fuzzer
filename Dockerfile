@@ -20,14 +20,18 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     clang \
     flex \
+    gcc-7-plugin-dev \
+    git \
     llvm \
     libglib2.0-dev \
     libpixman-1-dev \
     libtool-bin \
+    ninja-build \
     python3-dev \
     python3-setuptools \
     wget
 WORKDIR /jit-fuzzer
+COPY .git/modules/AFLplusplus .git/modules/AFLplusplus
 COPY AFLplusplus AFLplusplus
 COPY patches/AFLplusplus patches/AFLplusplus
 COPY Makefile .

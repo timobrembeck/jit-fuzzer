@@ -1,9 +1,12 @@
 # IntelliJ IDEA
 .idea
 # Git
-/.git
-/.gitignore
-/.gitmodules
+.git/*
+!.git/modules
+.git/modules/*
+!.git/modules/AFLplusplus
+.gitignore
+.gitmodules
 /.pre-commit-config.yaml
 # Docker
 /Dockerfile
