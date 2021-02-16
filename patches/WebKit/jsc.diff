@@ -1,8 +1,8 @@
 diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
-index 4b706e2ff2..b03d753392 100644
+index 31d9abcb31..a9d6edf491 100644
 --- a/Source/JavaScriptCore/jsc.cpp
 +++ b/Source/JavaScriptCore/jsc.cpp
-@@ -68,10 +68,12 @@
+@@ -69,10 +69,12 @@
  #include "TypedArrayInlines.h"
  #include "VMInspector.h"
  #include "WasmCapabilities.h"
@@ -15,11 +15,11 @@ index 4b706e2ff2..b03d753392 100644
  #include <string.h>
  #include <sys/stat.h>
  #include <sys/types.h>
-@@ -361,10 +363,13 @@ static JSC_DECLARE_HOST_FUNCTION(functionMallocInALoop);
- static JSC_DECLARE_HOST_FUNCTION(functionTotalCompileTime);
- 
+@@ -369,10 +371,13 @@ static JSC_DECLARE_HOST_FUNCTION(functionTotalCompileTime);
  static JSC_DECLARE_HOST_FUNCTION(functionSetUnhandledRejectionCallback);
  static JSC_DECLARE_HOST_FUNCTION(functionAsDoubleNumber);
+ 
+ static JSC_DECLARE_HOST_FUNCTION(functionDropAllLocks);
  
 +// Custom function for receiving afl input
 +static JSC_DECLARE_HOST_FUNCTION(functionGetAFLInputArray);
@@ -29,11 +29,11 @@ index 4b706e2ff2..b03d753392 100644
          Strict,
          Sloppy
      };
-@@ -651,10 +656,13 @@ private:
- 
-         addFunction(vm, "setUnhandledRejectionCallback", functionSetUnhandledRejectionCallback, 1);
+@@ -662,10 +667,13 @@ private:
  
          addFunction(vm, "asDoubleNumber", functionAsDoubleNumber, 1);
+ 
+         addFunction(vm, "dropAllLocks", functionDropAllLocks, 1);
  
 +        // Custom function for receiving afl input
 +        addFunction(vm, "getAFLInputArray", functionGetAFLInputArray, 1);
@@ -43,10 +43,10 @@ index 4b706e2ff2..b03d753392 100644
                  CustomGetterSetter* custom = CustomGetterSetter::create(vm, nullptr, testCustomAccessorSetter);
                  Identifier identifier = Identifier::fromString(vm, "testCustomAccessorSetter");
                  this->putDirectCustomAccessor(vm, identifier, custom, PropertyAttribute::DontEnum | PropertyAttribute::DontDelete | PropertyAttribute::CustomAccessor);
-@@ -2603,10 +2611,97 @@ JSC_DEFINE_HOST_FUNCTION(functionAsDoubleNumber, (JSGlobalObject* globalObject,
-     double num = callFrame->argument(0).toNumber(globalObject);
-     RETURN_IF_EXCEPTION(scope, encodedJSValue());
-     return JSValue::encode(jsDoubleNumber(num));
+@@ -2645,10 +2653,97 @@ JSC_DEFINE_HOST_FUNCTION(functionDropAllLocks, (JSGlobalObject* globalObject, Ca
+ {
+     JSLock::DropAllLocks dropAllLocks(globalObject);
+     return JSValue::encode(jsUndefined());
  }
  
 +// Custom function for receiving afl input

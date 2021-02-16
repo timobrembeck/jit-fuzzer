@@ -43,13 +43,15 @@ RUN make afl
 
 FROM ubuntu:18.04 as jsc
 RUN apt-get update && apt-get install -y \
+    apt-transport-https \
     bison \
     build-essential \
+    ca-certificates \
     clang-10 \
-    cmake \
     flex \
     git-core \
     git-svn \
+    gnupg \
     llvm \
     libicu-dev \
     libxml-libxml-perl \
@@ -57,10 +59,15 @@ RUN apt-get update && apt-get install -y \
     python \
     gperf \
     ruby \
+    software-properties-common \
     subversion \
     wget
+# Install recent version of cmake
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+RUN apt-get install -y cmake
 WORKDIR /usr/include/fuzzer
-RUN wget -nv https://raw.githubusercontent.com/llvm/llvm-project/master/compiler-rt/include/fuzzer/FuzzedDataProvider.h
+RUN wget -nv https://raw.githubusercontent.com/llvm/llvm-project/main/compiler-rt/include/fuzzer/FuzzedDataProvider.h
 WORKDIR /jit-fuzzer
 COPY WebKit WebKit
 COPY patches/WebKit patches/WebKit
