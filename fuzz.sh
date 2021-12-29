@@ -50,6 +50,15 @@ export LANG=en_US.utf8
 # activate qemu strace
 #export QEMU_STRACE=1
 
+# increase AFL forkserver init timeout
+#export AFL_FORKSRV_INIT_TMOUT=9999999999999999
+
+# increase AFL coverage map size
+#export AFL_MAP_SIZE=10000000
+
+# limit qemu instrumentation range
+#export AFL_QEMU_INST_RANGES=0x1-0x1
+
 # set afl tmp dir so system tmp dir (which is mounted as tmpfs in ram)
 export AFL_TMPDIR="/tmp"
 
