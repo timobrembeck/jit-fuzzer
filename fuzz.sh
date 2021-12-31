@@ -65,8 +65,7 @@ export AFL_TMPDIR="/tmp"
 # infinite fuzzing loop
 while true; do
 
-    # check if fuzzilli results exist and if they contain interesting samples which are not yet in target scripts
-    if [[ ! -d fuzzilli_results/interesting ]] || ! diff -q fuzzilli_results/interesting target_scripts | grep -q "Only in fuzzilli_results/interesting:"; then
+    if ! [[ -d fuzzilli_results/corpus ]] || diff -q fuzzilli_results/corpus target_scripts | grep -q "Only in fuzzilli_results/corpus: " | grep -q ".js"; then
         # do not send core dumps to external utility (also accept if there are core dumps)
         if [[ "$(cat /proc/sys/kernel/core_pattern)" != "|/bin/false" ]] && [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
             # check if file is writable
