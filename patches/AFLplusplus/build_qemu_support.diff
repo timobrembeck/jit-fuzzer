@@ -1,18 +1,14 @@
 diff --git a/qemu_mode/build_qemu_support.sh b/qemu_mode/build_qemu_support.sh
-index 50e5d4e..64b38c5 100755
+index 71453a71..c1b42bf5 100755
 --- a/qemu_mode/build_qemu_support.sh
 +++ b/qemu_mode/build_qemu_support.sh
-@@ -133,10 +133,13 @@ echo "[+] Got qemuafl."
- cd "qemuafl" || exit 1
- echo "[*] Checking out $QEMUAFL_VERSION"
- sh -c 'git stash && git stash drop' 1>/dev/null 2>/dev/null
- git checkout "$QEMUAFL_VERSION" || echo Warning: could not check out to commit $QEMUAFL_VERSION
- 
+@@ -99,6 +99,9 @@ else
+   git checkout "$QEMUAFL_VERSION" || echo Warning: could not check out to commit $QEMUAFL_VERSION
+ fi
+
 +echo "[*] Patching custom syscall"
 +patch -p1 <../../../patches/AFLplusplus/syscall.diff || exit 1
 +
  echo "[*] Making sure imported headers matches"
  cp "../../include/config.h" "./qemuafl/imported/" || exit 1
  cp "../../include/cmplog.h" "./qemuafl/imported/" || exit 1
- cp "../../include/snapshot-inl.h" "./qemuafl/imported/" || exit 1
- cp "../../include/types.h" "./qemuafl/imported/" || exit 1
