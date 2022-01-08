@@ -116,10 +116,8 @@ while true; do
     # start to fuzz
     ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc_afl target_scripts/${JS_FILENAME}
 
-    # save results if they are interesting
-    if [[ "$(ls -A afl_results/crashes)" ]] || [[ "$(ls -A afl_results/hangs)" ]]; then
-        cp -r afl_results results/${JS_FILENAME}
-    fi
+    # save results
+    cp -r afl_results results/${JS_FILENAME}
 
     # clear old results
     rm -r afl_results
