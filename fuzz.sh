@@ -114,7 +114,7 @@ while true; do
     fi
 
     # start to fuzz
-    ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc_afl target_scripts/${JS_FILENAME}
+    ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc_afl --useConcurrentJIT=false --useConcurrentGC=false  --thresholdForJITSoon=10 --thresholdForJITAfterWarmUp=10 --thresholdForOptimizeAfterWarmUp=100 --thresholdForOptimizeAfterLongWarmUp=100 --thresholdForOptimizeSoon=100 --thresholdForFTLOptimizeAfterWarmUp=1000 target_scripts/${JS_FILENAME}
 
     # save results
     cp -r afl_results results/${JS_FILENAME}
