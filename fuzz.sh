@@ -102,6 +102,12 @@ while true; do
     # get desired afl input size
     AFL_INPUT_SIZE=$(python3 -c "import json; file = open('.afl_input_sizes.json'); data = json.load(file); print(data['target_scripts/${JS_FILENAME}'])")
 
+    # if script does not have dynamic input, don't bother fuzzing it
+    if [[ ${AFL_INPUT_SIZE} -eq 0 ]]; then
+        echo "Target script does not have dynamic input"
+        continue
+    fi
+
     # write test case of desired size
     dd if=/dev/urandom of=afl_input/afl_input_seed bs=1 count=${AFL_INPUT_SIZE} > /dev/null
 
