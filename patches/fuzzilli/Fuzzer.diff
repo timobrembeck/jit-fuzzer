@@ -1,10 +1,8 @@
 diff --git a/Sources/Fuzzilli/Fuzzer.swift b/Sources/Fuzzilli/Fuzzer.swift
-index b328d76..0611a5e 100644
+index 5156ef9..9b2a84e 100644
 --- a/Sources/Fuzzilli/Fuzzer.swift
 +++ b/Sources/Fuzzilli/Fuzzer.swift
-@@ -594,15 +594,15 @@ public class Fuzzer {
-         assert(isInitialized)
-
+@@ -455,11 +455,11 @@ public class Fuzzer {
          #if os(Linux)
          do {
              let corePattern = try String(contentsOfFile: "/proc/sys/kernel/core_pattern", encoding: String.Encoding.ascii)
@@ -17,6 +15,3 @@ index b328d76..0611a5e 100644
 +            logger.warning("Could not check core dump behaviour. Please ensure core_pattern is set to '|/bin/false' or 'core'")
          }
          #endif
- 
-         // Check if we can execute programs
-         var execution = execute(Program())

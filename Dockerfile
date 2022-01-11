@@ -2,25 +2,33 @@
 # Fuzzilli build stage #
 ########################
 
-FROM swift:bionic as fuzzilli
+FROM swift:focal as fuzzilli
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=bash
 WORKDIR /jit-fuzzer
 COPY fuzzilli fuzzilli
 COPY patches/fuzzilli patches/fuzzilli
 COPY Makefile .
+RUN apt-get update && apt-get -y upgrade
+RUN apt-get install -y apt-utils make
 RUN make fuzzilli
 
 ###################
 # AFL build stage #
 ###################
 
-FROM ubuntu:18.04 as afl
-RUN apt-get update && apt-get install -y \
+FROM ubuntu:focal as afl
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=bash
+RUN apt-get update && apt-get -y upgrade
+RUN apt-get install -y \
+    apt-utils \
     automake \
     bison \
     build-essential \
     clang \
     flex \
-    gcc-7-plugin-dev \
+    gcc-9-plugin-dev \
     git \
     llvm \
     libglib2.0-dev \
@@ -41,13 +49,17 @@ RUN make afl
 # WebKit build stage #
 ######################
 
-FROM ubuntu:18.04 as jsc
-RUN apt-get update && apt-get install -y \
+FROM ubuntu:focal as jsc
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=bash
+RUN apt-get update && apt-get -y upgrade
+RUN apt-get install -y \
     apt-transport-https \
+    apt-utils \
     bison \
     build-essential \
     ca-certificates \
-    clang-10 \
+    clang-12 \
     flex \
     git-core \
     git-svn \
@@ -57,6 +69,7 @@ RUN apt-get update && apt-get install -y \
     libxml-libxml-perl \
     ninja-build \
     python \
+    python3-dev \
     gperf \
     ruby \
     software-properties-common \
@@ -64,7 +77,7 @@ RUN apt-get update && apt-get install -y \
     wget
 # Install recent version of cmake
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
 RUN apt-get install -y cmake
 WORKDIR /usr/include/fuzzer
 RUN wget -nv https://raw.githubusercontent.com/llvm/llvm-project/main/compiler-rt/include/fuzzer/FuzzedDataProvider.h
@@ -79,10 +92,14 @@ RUN make jsc
 # Fuzzing stage #
 #################
 
-FROM swift:bionic
+FROM swift:focal
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SHELL=bash
 
 # Install sudo
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get -y upgrade
+RUN apt-get install -y \
+    apt-utils \
     python3 \
     python3-dev \
     sudo
