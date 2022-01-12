@@ -18,6 +18,17 @@ if [[ "$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)" != "perform
     fi
 fi
 
+# do not send core dumps to external utility (also accept if there are core dumps)
+if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
+    # check if file is writable
+    if sudo test -w /proc/sys/kernel/core_pattern; then
+        sudo sysctl -w 'kernel.core_pattern=core' > /dev/null
+    else
+        echo -e "Please set your host's kernel core pattern to 'core' by running\n\n    sudo sysctl -w 'kernel.core_pattern=core'" >&2
+        exit 1
+    fi
+fi
+
 # set afl entrypoint
 if [[ -f .afl_entrypoint ]]; then
     export AFL_ENTRYPOINT=$(cat .afl_entrypoint)
@@ -66,16 +77,6 @@ export AFL_TMPDIR="/tmp"
 while true; do
 
     if ! [[ -d fuzzilli_results/corpus ]] || diff -q fuzzilli_results/corpus target_scripts | grep -q "Only in fuzzilli_results/corpus: " | grep -q ".js"; then
-        # do not send core dumps to external utility (also accept if there are core dumps)
-        if [[ "$(cat /proc/sys/kernel/core_pattern)" != "|/bin/false" ]] && [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
-            # check if file is writable
-            if sudo test -w /proc/sys/kernel/core_pattern; then
-                sudo sysctl -w 'kernel.core_pattern=|/bin/false' > /dev/null
-            else
-                echo -e "Please set your host's kernel core pattern to 'core' by running\n\n    sudo sysctl -w 'kernel.core_pattern=core'" >&2
-                exit 1
-            fi
-        fi
         # generate interesting js-scripts
         cd fuzzilli
         if [[ -d ../fuzzilli_results/corpus ]]; then
@@ -110,17 +111,6 @@ while true; do
 
     # write test case of desired size
     dd if=/dev/urandom of=afl_input/afl_input_seed bs=1 count=${AFL_INPUT_SIZE} > /dev/null
-
-    # do not send core dumps to external utility
-    if [[ "$(cat /proc/sys/kernel/core_pattern)" != "core" ]]; then
-        # check if file is writable
-        if sudo test -w /proc/sys/kernel/core_pattern; then
-            sudo sysctl -w 'kernel.core_pattern=core' > /dev/null
-        else
-            echo -e "Please set your host's kernel core pattern to 'core' by running\n\n    sudo sysctl -w 'kernel.core_pattern=core'" >&2
-            exit 1
-        fi
-    fi
 
     # remove current input if exists
     if [[ -f /${AFL_TMPDIR}/.cur_input ]]; then
