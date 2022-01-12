@@ -25,9 +25,7 @@
 /fuzzilli_results
 # WebKit
 /WebKit/FuzzBuild/
-/WebKit/AFLBuild/
-/jsc_fuzzilli
-/jsc_afl
+/jsc
 # Target scripts
 /target_scripts
 # Failed patches

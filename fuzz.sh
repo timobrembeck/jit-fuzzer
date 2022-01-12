@@ -3,7 +3,7 @@
 cd $(dirname "$BASH_SOURCE")
 
 # check if dependencies are built
-if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/AFLBuild/Debug/bin/jsc || ! -f ./WebKit/FuzzBuild/Debug/bin/jsc ]]; then
+if [[ ! -f ./AFLplusplus/afl-fuzz || ! -f ./WebKit/FuzzBuild/Debug/bin/jsc ]]; then
     echo -e "Please build the dependencies by executing\n\n    $(whoami)@$(hostname):$(dirs +0)\$ make\n\nand restart this script." >&2
     exit 1
 fi
@@ -73,7 +73,7 @@ while true; do
         if [[ -d ../fuzzilli_results/corpus ]]; then
             RESUME="--resume"
         fi
-        swift run FuzzilliCli --numIterations=20 --exportStatistics --storagePath=../fuzzilli_results ${RESUME} --logLevel=verbose --profile=jsc ../jsc_fuzzilli
+        swift run FuzzilliCli --numIterations=20 --exportStatistics --storagePath=../fuzzilli_results ${RESUME} --logLevel=verbose --profile=jsc ../jsc
         cd ..
     fi
 
@@ -114,7 +114,7 @@ while true; do
     fi
 
     # start to fuzz
-    ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc_afl --useConcurrentJIT=false --useConcurrentGC=false  --thresholdForJITSoon=10 --thresholdForJITAfterWarmUp=10 --thresholdForOptimizeAfterWarmUp=100 --thresholdForOptimizeAfterLongWarmUp=100 --thresholdForOptimizeSoon=100 --thresholdForFTLOptimizeAfterWarmUp=1000 target_scripts/${JS_FILENAME}
+    ./AFLplusplus/afl-fuzz -i afl_input -o afl_results -t 9999999999999999 -m none -d -V 10000 -Q ./jsc --useConcurrentJIT=false --useConcurrentGC=false  --thresholdForJITSoon=10 --thresholdForJITAfterWarmUp=10 --thresholdForOptimizeAfterWarmUp=100 --thresholdForOptimizeAfterLongWarmUp=100 --thresholdForOptimizeSoon=100 --thresholdForFTLOptimizeAfterWarmUp=1000 target_scripts/${JS_FILENAME}
 
     # save results
     cp -r afl_results results/${JS_FILENAME}

@@ -8,8 +8,7 @@
 # Target scripts
 /target_scripts
 # JSC symlink
-/jsc_fuzzilli
-/jsc_afl
+/jsc
 # Failed patches
 *.orig
 *.rej

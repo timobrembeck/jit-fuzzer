@@ -117,7 +117,7 @@ COPY --chown=docker:docker fuzz.sh js_converter.py ./
 COPY --chown=docker:docker --from=fuzzilli jit-fuzzer/fuzzilli fuzzilli
 COPY --chown=docker:docker --from=afl jit-fuzzer/AFLplusplus AFLplusplus
 COPY --chown=docker:docker --from=jsc jit-fuzzer/WebKit WebKit
-COPY --chown=docker:docker --from=jsc jit-fuzzer/jsc_fuzzilli jit-fuzzer/jsc_afl jit-fuzzer/.afl_entrypoint ./
+COPY --chown=docker:docker --from=jsc jit-fuzzer/jsc jit-fuzzer/.afl_entrypoint ./
 
 # Relinquish root privileges
 USER docker

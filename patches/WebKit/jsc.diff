@@ -1,10 +1,8 @@
 diff --git a/Source/JavaScriptCore/jsc.cpp b/Source/JavaScriptCore/jsc.cpp
-index 31d9abcb31..a9d6edf491 100644
+index 01a1e48ad581..4ff7c106c52b 100644
 --- a/Source/JavaScriptCore/jsc.cpp
 +++ b/Source/JavaScriptCore/jsc.cpp
-@@ -69,10 +69,12 @@
- #include "TypedArrayInlines.h"
- #include "VMInspector.h"
+@@ -77,6 +77,8 @@
  #include "WasmCapabilities.h"
  #include "WasmFaultSignalHandler.h"
  #include "WasmMemory.h"
@@ -13,11 +11,7 @@ index 31d9abcb31..a9d6edf491 100644
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
- #include <sys/stat.h>
- #include <sys/types.h>
-@@ -369,10 +371,13 @@ static JSC_DECLARE_HOST_FUNCTION(functionTotalCompileTime);
- static JSC_DECLARE_HOST_FUNCTION(functionSetUnhandledRejectionCallback);
- static JSC_DECLARE_HOST_FUNCTION(functionAsDoubleNumber);
+@@ -476,6 +478,9 @@ static JSC_DECLARE_HOST_FUNCTION(functionAsDoubleNumber);
  
  static JSC_DECLARE_HOST_FUNCTION(functionDropAllLocks);
  
@@ -27,11 +21,7 @@ index 31d9abcb31..a9d6edf491 100644
  struct Script {
      enum class StrictMode {
          Strict,
-         Sloppy
-     };
-@@ -662,10 +667,13 @@ private:
- 
-         addFunction(vm, "asDoubleNumber", functionAsDoubleNumber, 1);
+@@ -779,6 +784,9 @@ private:
  
          addFunction(vm, "dropAllLocks", functionDropAllLocks, 1);
  
@@ -41,11 +31,7 @@ index 31d9abcb31..a9d6edf491 100644
          if (Options::exposeCustomSettersOnGlobalObjectForTesting()) {
              {
                  CustomGetterSetter* custom = CustomGetterSetter::create(vm, nullptr, testCustomAccessorSetter);
-                 Identifier identifier = Identifier::fromString(vm, "testCustomAccessorSetter");
-                 this->putDirectCustomAccessor(vm, identifier, custom, PropertyAttribute::DontEnum | PropertyAttribute::DontDelete | PropertyAttribute::CustomAccessor);
-@@ -2645,10 +2653,97 @@ JSC_DEFINE_HOST_FUNCTION(functionDropAllLocks, (JSGlobalObject* globalObject, Ca
- {
-     JSLock::DropAllLocks dropAllLocks(globalObject);
+@@ -2991,6 +2999,93 @@ JSC_DEFINE_HOST_FUNCTION(functionDropAllLocks, (JSGlobalObject* globalObject, Ca
      return JSValue::encode(jsUndefined());
  }
  
@@ -139,5 +125,3 @@ index 31d9abcb31..a9d6edf491 100644
  // Use SEH for Release builds only to get rid of the crash report dialog
  // (luckily the same tests fail in Release and Debug builds so far). Need to
  // be in a separate main function because the jscmain function requires object
- // unwinding.
- 
