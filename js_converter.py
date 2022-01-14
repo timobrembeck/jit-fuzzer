@@ -67,7 +67,7 @@ def convert_file(filename: str) -> str:
             # replace double variables
             line = re.sub(r"-?\d+\.\d+(e(\+|-)\d+)?", double_replacement_wrapper, line)
             # replace integer variables
-            line = re.sub(r"( | \[|,|:|~)-?\d+", integer_replacement_wrapper, line)
+            line = re.sub(r"( | \[|,|:|~)-?\d+n?", integer_replacement_wrapper, line)
         converted_file += line + "\n"
     converted_file += "let afl_input_types = " + str(afl_input_types) + "\n"
     converted_file += "let afl_input = " + str(get_default_afl_input()) + "\n"
