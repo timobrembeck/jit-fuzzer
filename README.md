@@ -1,6 +1,11 @@
-[![Docker](https://img.shields.io/badge/DockerHub-timoludwig%2Fjit--fuzzer-blue?logo=docker)](https://hub.docker.com/repository/docker/timoludwig/jit-fuzzer)
+[![Docker](https://img.shields.io/badge/DockerHub-timoludwig%2Fjit--fuzzer-blue?logo=docker)](https://hub.docker.com/r/timoludwig/jit-fuzzer)
 [![License](https://img.shields.io/badge/License-GPL%203.0-green.svg)](https://opensource.org/licenses/GPL-3.0)
-<!--[![Docker Image Size](https://img.shields.io/docker/image-size/timoludwig/jit-fuzzer/latest)](https://hub.docker.com/repository/docker/timoludwig/jit-fuzzer)-->
+
+## :warning: This project is no longer maintained
+
+For current research on this topic, see for example:
+- Bernhard, L., Scharnowski, T., Schloegel, M., Blazytko, T., &amp; Holz, T. (2022). __JIT-Picking: Differential Fuzzing of JavaScript Engines.__ _Proceedings of the 2022 ACM SIGSAC Conference on Computer and Communications Security._ https://doi.org/10.1145/3548606.3560624 
+- Groß, S., Koch, S., Bernhard, L., Holz, T., &amp; Johns, M. (2023). __Fuzzilli: Fuzzing for JavaScript Jit Compiler vulnerabilities.__ _Proceedings 2023 Network and Distributed System Security Symposium._ https://doi.org/10.14722/ndss.2023.24290
 
 # jit-fuzzer
 
